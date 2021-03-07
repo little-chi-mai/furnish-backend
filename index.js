@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const pathfinderUI = require("pathfinder-ui");
 const dotenv = require("dotenv");
 const dbServer = require("./api/config/database");
 
@@ -21,6 +22,7 @@ global.Product = require("./api/models/productModel");
 global.Sale = require("./api/models/saleModel");
 global.Review = require("./api/models/reviewModel");
 global.Discount = require("./api/models/discountModel");
+global.Cart = require("./api/models/cartModel");
 
 // Routes
 const userRoutes = require("./api/routes/userRoutes");
@@ -29,6 +31,7 @@ const productRoutes = require("./api/routes/productRoutes");
 const saleRoutes = require("./api/routes/saleRoutes");
 const reviewRoutes = require("./api/routes/reviewRoutes");
 const discountRoutes = require("./api/routes/discountRoutes");
+const cartRoutes = require("./api/routes/cartRoutes");
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -49,6 +52,14 @@ app.use(cors()); // remember to turn on cors to accept specific domains
 app.use(session({ secret: process.env.SESSION }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(
+	"/pathfinder",
+	function (req, res, next) {
+		pathfinderUI(app);
+		next();
+	},
+	pathfinderUI.router
+);
 
 userRoutes(app);
 authRoutes(app);
@@ -56,6 +67,7 @@ productRoutes(app);
 saleRoutes(app);
 reviewRoutes(app);
 discountRoutes(app);
+cartRoutes(app);
 
 app.listen(port, console.log(`Server started on http://localhost:${port}`));
 
