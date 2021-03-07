@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
+const Cart = mongoose.model("Cart");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 
@@ -37,6 +38,13 @@ exports.createUser = async (req, res) => {
 
 		newUser.save((err, user) => {
 			if (err) res.send(err);
+
+			const newCart = new Cart({
+				user: user.id,
+				cart: []
+			});
+			newCart.save();
+
 			req.session.user_id = user.id;
 			res.json(user);
 		});
