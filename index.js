@@ -18,14 +18,17 @@ mongoose.connect(dbServer, {
 // Models - Global
 global.User = require("./api/models/userModel");
 global.Product = require("./api/models/productModel");
-global.saleModel = require("./api/models/saleModel");
+global.Sale = require("./api/models/saleModel");
 global.Review = require("./api/models/reviewModel");
+global.Discount = require("./api/models/discountModel");
 
 // Routes
 const userRoutes = require("./api/routes/userRoutes");
 const authRoutes = require("./api/routes/authRoutes");
 const productRoutes = require("./api/routes/productRoutes");
 const saleRoutes = require("./api/routes/saleRoutes");
+const reviewRoutes = require("./api/routes/reviewRoutes");
+const discountRoutes = require("./api/routes/discountRoutes");
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -51,6 +54,8 @@ userRoutes(app);
 authRoutes(app);
 productRoutes(app);
 saleRoutes(app);
+reviewRoutes(app);
+discountRoutes(app);
 
 app.listen(port, console.log(`Server started on http://localhost:${port}`));
 
