@@ -24,8 +24,8 @@ exports.findProduct = (req, res) => {
 };
 
 exports.findProductBy = async (req, res) => {
-	const categories = req.query.categories.split(",");
-	const color = req.query.color.split(",");
+	const categories = req.query.categories.split(", ");
+	const color = req.query.color.split(", ");
 	const query = {};
 
 	if (categories.length > 0) query.categories = { $all: categories };

@@ -18,7 +18,13 @@ exports.listUsers = (req, res) => {
 
 exports.createUser = async (req, res) => {
 	const { email, password, password_confirmation, address, isAdmin, firstName, lastName } = req.body;
-	if (password === password_confirmation && password.length >= 5) {
+	const existingUserCheck = await User.find({ email });
+
+	if (existingUserCheck.length > 0) {
+		res.json({
+			error: "User already exists."
+		});
+	} else if (password === password_confirmation && password.length >= 5) {
 		const hash = await bcrypt.hash(password, 12);
 		const newUser = new User({
 			email,
