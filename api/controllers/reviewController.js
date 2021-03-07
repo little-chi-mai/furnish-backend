@@ -2,21 +2,27 @@ const mongoose = require("mongoose");
 const Review = mongoose.model("Review");
 
 exports.findUserReviews = (req, res) => {
-	Review.find({ user: req.params.userId }, (err, reviews) => {
-		if (err) res.send(err);
-		res.json({
-			reviews
-		});
-	});
+	Review.find({ user: req.params.userId })
+		.populate("product")
+		.then((err, reviews) => {
+			if (err) res.send(err);
+			res.json({
+				reviews
+			});
+		})
+		.catch((err) => console.log("There was an ERROR:", err));
 };
 
 exports.findProductReviews = (req, res) => {
-	Review.find({ product: req.params.productId }, (err, reviews) => {
-		if (err) res.send(err);
-		res.json({
-			reviews
-		});
-	});
+	Review.find({ product: req.params.productId })
+		.populate("user")
+		.then((err, reviews) => {
+			if (err) res.send(err);
+			res.json({
+				reviews
+			});
+		})
+		.catch((err) => console.log("There was an ERROR:", err));
 };
 
 exports.listReviews = (req, res) => {
