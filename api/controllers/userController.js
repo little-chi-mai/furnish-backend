@@ -61,7 +61,7 @@ exports.deleteUser = (req, res) => {
 		req.session.destroy();
 		res.json({
 			message: "User sucessfully deleted",
-			_id: req.params.userId
+			id: req.params.userId
 		});
 	});
 };

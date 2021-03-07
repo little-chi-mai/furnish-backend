@@ -8,22 +8,24 @@ const dbServer = require("./api/config/database");
 
 dotenv.config();
 
-global.User = require("./api/models/userModel");
-global.productModel = require("./api/models/productModel");
-global.saleModel = require("./api/models/saleModel");
-
-// Routes
-const userRoutes = require("./api/routes/userRoutes");
-const authRoutes = require("./api/routes/authRoutes");
-const productRoutes = require("./api/routes/productRoutes");
-const saleRoutes = require("./api/routes/saleRoutes");
-
 mongoose.Promise = global.Promise; // before promises were a thing in JS
 mongoose.set("useFindAndModify", false);
 mongoose.connect(dbServer, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true
 });
+
+// Models - Global
+global.User = require("./api/models/userModel");
+global.Product = require("./api/models/productModel");
+// global.saleModel = require("./api/models/saleModel");
+global.Review = require("./api/models/reviewModel");
+
+// Routes
+const userRoutes = require("./api/routes/userRoutes");
+const authRoutes = require("./api/routes/authRoutes");
+const productRoutes = require("./api/routes/productRoutes");
+// const saleRoutes = require("./api/routes/saleRoutes");
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -40,7 +42,7 @@ const corsOptions = {
 	}
 };
 
-app.use(cors()); // remember to turn on cors
+app.use(cors()); // remember to turn on cors to accept specific domains
 app.use(session({ secret: process.env.SESSION }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -48,7 +50,7 @@ app.use(bodyParser.json());
 userRoutes(app);
 authRoutes(app);
 productRoutes(app);
-saleRoutes(app);
+// saleRoutes(app);
 
 app.listen(port, console.log(`Server started on http://localhost:${port}`));
 

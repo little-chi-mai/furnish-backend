@@ -1,8 +1,9 @@
-const productBuilder = require('../controllers/productController');
+const productBuilder = require("../controllers/productController");
 
 module.exports = (app) => {
-    app.route('/products')
-        .get(productBuilder.list_all_products)
-        .post(productBuilder.create_a_product)
-}
+	app.route("/products/q").get(productBuilder.findProductBy);
 
+	app.route("/products").get(productBuilder.listProducts).post(productBuilder.createProduct);
+
+	app.route("/products/:productId").get(productBuilder.findProduct).put(productBuilder.updateProduct).delete(productBuilder.deleteProduct);
+};
