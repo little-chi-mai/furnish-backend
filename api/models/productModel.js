@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const {Schema} = mongoose;
+// const {Schema} = mongoose;
 
 // {name: 'Chairy',
 // description: 'Provide extreme comfort',
@@ -11,7 +11,7 @@ const {Schema} = mongoose;
 // quantity: 100,
 // image: 'https://www.jamessaid.com.au/media/catalog/product/cache/2/image/9df78eab33525d08d6e5fb8d27136e95/1/1/111753_0.jpg'
 // }
-const ProductSchema = new Schema(
+const ProductSchema = new mongoose.Schema(
     {
         name: {
             type: String,
