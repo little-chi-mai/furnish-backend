@@ -1,10 +1,8 @@
 const saleController = require("../controllers/saleController");
-const productController = require("../controllers/productController")
-const {validateCartItems} = require('use-shopping-cart/src/serverUtil');
-const axios = require('axios');
-require('dotenv').config();
-
-
+const productController = require("../controllers/productController");
+const { validateCartItems } = require("use-shopping-cart/src/serverUtil");
+// const axios = require('axios');
+require("dotenv").config();
 
 module.exports = (app) => {
 	app.route("/checkout").post(saleController.checkout);
@@ -16,4 +14,3 @@ module.exports = (app) => {
 	// For showing all sales - for admin
 	app.route("/sales").get(saleController.listSales);
 };
-
