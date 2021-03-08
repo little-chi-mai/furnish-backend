@@ -54,7 +54,7 @@ const seedProducts = [
 		style: "modern",
 		categories: ["living room", "sofa"],
 		qty: 100,
-		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/image/9df78eab33525d08d6e5fb8d27136e95/1/1/111753_0.jpg"
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/image/9df78eab33525d08d6e5fb8d27136e95/1/1/111753_0.jpg",
 	},
 	{
 		name: "Tably",
