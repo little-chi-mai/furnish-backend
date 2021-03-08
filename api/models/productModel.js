@@ -16,7 +16,7 @@ const ProductSchema = new Schema({
 		type: String,
 		required: "Name cannot be empty."
 	},
-	desciption: {
+	description: {
 		type: String
 	},
 	price: {

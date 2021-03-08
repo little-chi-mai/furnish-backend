@@ -5,17 +5,27 @@ const bcrypt = require("bcrypt");
 exports.login = async (req, res) => {
 	const { email, password } = req.body;
 	const user = await User.findOne({ email });
-	const validPassword = await bcrypt.compare(password, user.hash);
 
-	if (validPassword) {
-		req.session.user_id = user.id;
-		res.json({
-			status: "LOGGED_IN",
-			user
-			// data: req.session
-		});
+	if (user) {
+		const validPassword = await bcrypt.compare(password, user.hash);
+
+		if (validPassword) {
+			req.session.user_id = user.id;
+
+			res.json({
+				status: "LOGGED_IN",
+				user
+				// data: req.session
+			});
+		} else {
+			res.json({
+				code: 401,
+				error: "Incorrect email or password."
+			});
+		}
 	} else {
 		res.json({
+			code: 401,
 			error: "Incorrect email or password."
 		});
 	}
@@ -25,8 +35,7 @@ exports.logout = (req, res) => {
 	// req.session.user_id = null;
 	req.session.destroy();
 
-	res.json({
-		code: 200,
+	res.status(200).json({
 		status: "NOT_LOGGED_IN",
 		message: "Logged out successfully."
 	});

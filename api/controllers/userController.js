@@ -23,6 +23,7 @@ exports.createUser = async (req, res) => {
 
 	if (existingUserCheck.length > 0) {
 		res.json({
+			code: 401,
 			error: "User already exists."
 		});
 	} else if (password === password_confirmation && password.length >= 5) {
@@ -46,7 +47,10 @@ exports.createUser = async (req, res) => {
 			newCart.save();
 
 			req.session.user_id = user.id;
-			res.json(user);
+			res.json({
+				status: "LOGGED_IN",
+				user
+			});
 		});
 	} else {
 		res.json({

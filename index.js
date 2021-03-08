@@ -3,7 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const pathfinderUI = require("pathfinder-ui");
+const pathfinderUI = require("pathfinder-ui"); // this to be removed for prod
 const dotenv = require("dotenv");
 const dbServer = require("./api/config/database");
 
@@ -38,17 +38,18 @@ const app = express();
 
 // For CORS
 const devServer = "http://localhost:3001";
-const prodServer = "http://localhost:3001";
+const prodServer = "localhost:3001";
 
 const whitelist = [devServer, prodServer];
 const corsOptions = {
 	origin(origin, callback) {
 		if (whitelist.indexOf(origin) !== -1) callback(null, true);
 		else callback(new Error("Not allowed by CORS"));
-	}
+	},
+	credentials: true
 };
 
-app.use(cors()); // remember to turn on cors to accept specific domains
+app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
 app.use(session({ secret: process.env.SESSION }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -59,7 +60,7 @@ app.use(
 		next();
 	},
 	pathfinderUI.router
-);
+); // this to be removed for prod
 
 userRoutes(app);
 authRoutes(app);
