@@ -1,12 +1,18 @@
 const mongoose = require("mongoose");
 const Product = mongoose.model("Product");
 
+// http request/response for all products
 exports.listProducts = (req, res) => {
-	Product.find({}, (err, products) => {
-		if (err) res.send(err);
-		res.json(products);
-	});
+	this.allProducts()
+		.then(products => res.json(products))
+		.catch(err => res.send(err));
 };
+
+// access database for all products
+exports.allProducts = () => {
+	const productPromise = Product.find({});
+	return productPromise;
+}
 
 exports.createProduct = (req, res) => {
 	const newProduct = new Product(req.body);

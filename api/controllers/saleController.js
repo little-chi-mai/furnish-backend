@@ -1,3 +1,5 @@
+const productController = require("./productController");
+
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const mongoose = require("mongoose");
 const productModel = require("../models/productModel");
@@ -67,7 +69,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 			const validatedItems = [];
 			cartItemsArray.map(cartItem => {
 				const inventoryItem = inventory.find((product) => product.id === cartItem.id);
-				if (!inventoryItem) throw new Error(`Product ${sku} not found!`)
+				if (!inventoryItem) throw new Error(`Product ${product.id} not found!`)
 				const item = {
 				name: inventoryItem.name,
 				amount: inventoryItem.price * 100,
@@ -81,13 +83,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 			return validatedItems;
 		}
 
-		function getProducts(){
-			const promise = axios.get('http://localhost:3000/products');
-			return promise
-		} 
-		
-		const products = (await getProducts()).data;
-
+		const products = (await productController.allProducts());
 		const line_items = validateCartItems(products, cartItems);
 
 		const session = await stripe.checkout.sessions.create({
