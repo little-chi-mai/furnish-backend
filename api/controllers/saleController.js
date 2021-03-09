@@ -97,6 +97,6 @@ exports.createCheckoutSession = async (req, res, next) => {
 			session
 		});
 	} catch (error) {
-		res.status(500).json({ statusCode: 500, message: error.message });
+		res.status(500).json({ statusCode: 500, message: error.message, error });
 	}
 };
