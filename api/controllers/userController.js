@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
 const Cart = mongoose.model("Cart");
+const Sale = mongoose.model("Sale");
+const Review = mongoose.model("Review");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 
@@ -74,12 +76,32 @@ exports.updateUser = (req, res) => {
 };
 
 exports.deleteUser = (req, res) => {
-	User.deleteOne({ _id: req.params.userId }, (err) => {
+	const userId = req.params.userId;
+	User.deleteOne({ _id: userId }, (err) => {
 		if (err) res.send(err);
+
+		// Destorys the session
 		req.session.destroy();
+
+		// Cleanup tasks
+		// > Delete Cart
+		Cart.deleteOne({ user: userId }, (err) => {
+			if (err) res.send(err);
+		});
+
+		// > Delete All Reviews
+		Review.deleteMany({ user: userId }, (err) => {
+			if (err) res.send(err);
+		});
+
+		// > Delete All Sales
+		Sale.deleteMany({ user: userId }, (err) => {
+			if (err) res.send(err);
+		});
+
 		res.json({
 			message: "User sucessfully deleted",
-			id: req.params.userId
+			id: userId
 		});
 	});
 };

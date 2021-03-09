@@ -33,5 +33,9 @@ UserSchema.set("toJSON", {
 // 	console.log("POST MIDDLEWARE");
 // 	console.log(data);
 // });
+UserSchema.post("save", async function (data) {
+	console.log("POST MIDDLEWARE");
+	console.log(data);
+});
 
 module.exports = mongoose.model("User", UserSchema);
