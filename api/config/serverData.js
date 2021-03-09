@@ -1,5 +1,8 @@
-// export const ROOT = "http://localhost:3001";
-// export const PRODUCTS = "http://localhost:3001/products";
+// const ROOT = "http://localhost:3001";
+// const PRODUCTS = "http://localhost:3001/products";
 
-export const ROOT = "https://furnique.herokuapp.com";
-export const PRODUCTS = "https://furnique.herokuapp.com/products";
+const ROOT = "https://furnique.herokuapp.com";
+const PRODUCTS = "https://furnique.herokuapp.com/products";
+
+module.exports.ROOT = ROOT;
+module.exports.PRODUCTS = PRODUCTS;
