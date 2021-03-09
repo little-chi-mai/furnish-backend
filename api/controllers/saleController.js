@@ -24,9 +24,9 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // };
 
 exports.checkout = (req, res) => {
-	console.log("CHECKOUT()");
+	// console.log("CHECKOUT()");
 	const { user, products } = req.body;
-	console.log(user, products);
+	// console.log(user, products);
 	const newSale = new Sale({
 		user,
 		products
@@ -65,7 +65,10 @@ exports.listSales = (req, res) => {
 exports.createCheckoutSession = async (req, res, next) => {
 	try {
 
-		const cartItems = req.body;
+		const cartItems = req.body['cartItems'];
+		console.log(req.body);
+		console.log("CARTITEMS", cartItems);
+
 		
 		const validateCartItems = (inventory, cartDetails) => {
 			const validatedItems = [];
@@ -102,7 +105,8 @@ exports.createCheckoutSession = async (req, res, next) => {
 			shipping_address_collection: {
 				allowed_countries: ["AU", "NZ", "US"]
 			},
-			mode: 'payment'
+			mode: 'payment',
+			client_reference_id: req.body['userId'],
 		});
 
 		res.status(200).json(checkoutSession)
@@ -128,4 +132,32 @@ exports.getCheckoutSession = async (req, res) => {
 	} catch (error) {
 	  res.status(500).json({statusCode: 500, message: error.message});
 	}
-  }
+}
+
+
+const createSale = async session => {
+	// const tour = session.client_reference_id;
+	// const user = (await User.findOne({ email: session.customer_email })).id;
+	// const price = session.display_items[0].amount / 100;
+	// await Booking.create({ tour, user, price });
+  };
+  
+exports.webhookCheckout = (req, res, next) => {
+	const signature = req.headers['stripe-signature'];
+
+	let event;
+	try {
+		event = stripe.webhooks.constructEvent(
+		req.body,
+		signature,
+		process.env.STRIPE_WEBHOOK_SECRET
+		);
+	} catch (err) {
+		return res.status(400).send(`Webhook error: ${err.message}`);
+	}
+
+	if (event.type === 'checkout.session.completed')
+		createBookingCheckout(event.data.object);
+
+	res.status(200).json({ received: true });
+};

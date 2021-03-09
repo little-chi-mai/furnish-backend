@@ -33,6 +33,9 @@ const reviewRoutes = require("./api/routes/reviewRoutes");
 const discountRoutes = require("./api/routes/discountRoutes");
 const cartRoutes = require("./api/routes/cartRoutes");
 
+// Controller
+const saleController = require("./api/controllers/saleController");
+
 const port = process.env.PORT || 3000;
 const app = express();
 
@@ -48,6 +51,11 @@ const corsOptions = {
 	},
 	credentials: true
 };
+
+app.post('/webhook-checkout',
+	bodyParser.raw({type: 'application/json'}),
+	saleController.webhookCheckout
+)
 
 app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
 // app.use(cors());
