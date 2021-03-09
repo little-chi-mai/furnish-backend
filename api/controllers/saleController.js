@@ -142,13 +142,14 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const checkoutSession = await stripe.checkout.sessions.create({
 			submit_type: 'pay',
 			payment_method_types: ['card'],
-			success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
+			// success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
+			success_url: `${origin}/`,
 			cancel_url: origin,
 			line_items: lineItems,
-			billing_address_collection: 'auto',
-			shipping_address_collection: {
-				allowed_countries: ["AU", "NZ", "US"]
-			},
+			// billing_address_collection: 'auto',
+			// shipping_address_collection: {
+			// 	allowed_countries: ["AU", "NZ", "US"]
+			// },
 			mode: 'payment',
 			client_reference_id: req.body['userId'],
 		});
@@ -159,42 +160,42 @@ exports.createCheckoutSession = async (req, res, next) => {
 	}
 }
 
-exports.getCheckoutSession = async (req, res) => {
-	console.log(req);
-	const {sessionId} = req.params;
+// exports.getCheckoutSession = async (req, res) => {
+// 	console.log(req);
+// 	const {sessionId} = req.params;
 
-	try {
-		if (!sessionId.startsWith("cs_")) {
-			throw Error('Incorrect checkout session id')
-		}
+// 	try {
+// 		if (!sessionId.startsWith("cs_")) {
+// 			throw Error('Incorrect checkout session id')
+// 		}
 	
-		const checkoutSession = await stripe.checkout.sessions.retrieve(
-			sessionId,
-			{expand: ["payment_intent"]}
-		);
-		const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
-		// const products = await Promise.all(listLineItems.map((lineItem) => {
-		// 	const product = stripe.products.retrieve(lineItem.price.product);
-		// 	return product;
-		// }));
+// 		const checkoutSession = await stripe.checkout.sessions.retrieve(
+// 			sessionId,
+// 			{expand: ["payment_intent"]}
+// 		);
+// 		const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
+// 		// const products = await Promise.all(listLineItems.map((lineItem) => {
+// 		// 	const product = stripe.products.retrieve(lineItem.price.product);
+// 		// 	return product;
+// 		// }));
 
-		const userId = checkoutSession.client_reference_id;
-		let products = [];
+// 		const userId = checkoutSession.client_reference_id;
+// 		let products = [];
 
-		for (lineItem of listLineItems) {
-			const product = {
-				item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
-				qty: lineItem.quantity,
-				price: lineItem.price.unit_amount
-			}
-			products.push(product);
-		}
-		res.status(200).json({"checkoutSession": checkoutSession, "listLineItems": listLineItems, "products": products})
-	} catch (error) {
-		console.log("error", error);
-		res.status(500).json({statusCode: 500, message: error.message});
-	}
-}
+// 		for (lineItem of listLineItems) {
+// 			const product = {
+// 				item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
+// 				qty: lineItem.quantity,
+// 				price: lineItem.price.unit_amount
+// 			}
+// 			products.push(product);
+// 		}
+// 		res.status(200).json({"checkoutSession": checkoutSession, "listLineItems": listLineItems, "products": products})
+// 	} catch (error) {
+// 		console.log("error", error);
+// 		res.status(500).json({statusCode: 500, message: error.message});
+// 	}
+// }
 
 
 const createSale = async session => {
@@ -218,7 +219,7 @@ const createSale = async session => {
 		const product = {
 			item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
 			qty: lineItem.quantity,
-			price: lineItem.price.unit_amount
+			price: lineItem.price.unit_amount 
 		}
 		products.push(product);
 	}
@@ -249,6 +250,7 @@ exports.webhookCheckout = (req, res, next) => {
 	}
 
 	if (event.type === 'checkout.session.completed')
+		console.log("SALES TO BE CREATED");
 		createSale(event.data.object);
 
 	res.status(200).json({ received: true });
