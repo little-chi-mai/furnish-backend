@@ -69,29 +69,73 @@ exports.createCheckoutSession = async (req, res, next) => {
 		console.log(req.body);
 		console.log("CARTITEMS", cartItems);
 
-		
 		const validateCartItems = (inventory, cartDetails) => {
 			const validatedItems = [];
 			const cartItemsArray = Object.keys(cartDetails).map(key => cartItems[key]);
 			cartItemsArray.map(cartItem => {
 				const inventoryItem = inventory.find((product) => product.id === cartItem.id);
-				if (!inventoryItem) throw new Error(`Product ${product.id} not found!`)
+				if (!inventoryItem) throw new Error(`Product ${product.id} not found!`);
 				const item = {
-				name: inventoryItem.name,
-				amount: inventoryItem.price * 100,
-				currency: "AUD",
-				quantity: cartItem.quantity
+					quantity: cartItem.quantity,
+					price_data: {
+						currency: "AUD",
+						product_data: {
+							name: inventoryItem.name,
+							metadata: {
+								id: inventoryItem.id
+							}
+						},
+						unit_amount: inventoryItem.price * 100
+					}
 				}
-				if (inventoryItem.description) item.description = inventoryItem.description
-				if (inventoryItem.image) item.images = [inventoryItem.image]
+				if (inventoryItem.description) item.price_data.product_data.description = inventoryItem.description;
+				if (inventoryItem.image) item.price_data.product_data.images = [inventoryItem.image];
 				validatedItems.push(item)
 			})
 			return validatedItems;
 		}
 
+
 		const products = (await productController.allProducts());
 
-		const line_items = validateCartItems(products, cartItems);
+		const lineItems = validateCartItems(products, cartItems);
+
+		// // validatedCartItems -> filtering cartItems by checking whether cartItem is part of products
+		// const validateCartItems = (products, cartItems) => {
+		// 	return Object
+		// 		.keys(cartItems)
+		// 		.map(key => cartItems[key])
+		// 		.map(cartItem => {
+		// 			const product = products.find((product) => product.id === cartItem.id)
+		// 			if (!product) throw new Error(`Product ${product.id} not found!`)
+		// 			return {
+		// 				item: product,
+		// 				qty: cartItem.quantity,
+		// 				price: product.price
+		// 			}
+		// 		})
+		// }
+		// const saleProducts = validateCartItems((await productController.allProducts()), cartItems);
+
+		// // convert validatedCartItems to lineItems
+		// const convertSaleProductsToStripeItems = (saleProducts) => {
+		// 	saleProducts.map(saleProduct => {
+		// 		const item = {
+		// 		name: saleProduct.item.name,
+		// 		amount: saleProduct.item.price * 100,
+		// 		currency: "AUD",
+		// 		quantity: saleProduct.quantity
+		// 		}
+		// 		if (saleProduct.item.description) item.description = saleProduct.item.description
+		// 		if (saleProduct.item.image) item.images = [saleProduct.item.image]
+		// 		return item
+		// 	})
+		// }
+		// const line_items = convertSaleProductsToStripeItems(saleProducts);
+		
+		// // create stripe sessions
+		// save session + validatedCartItems to MongoDB
+		// res.json(session)
 
 		const origin = process.env.NODE_ENV === 'production' ? req.headers.origin : 'http://localhost:3001'
 
@@ -100,7 +144,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 			payment_method_types: ['card'],
 			success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: origin,
-			line_items,
+			line_items: lineItems,
 			billing_address_collection: 'auto',
 			shipping_address_collection: {
 				allowed_countries: ["AU", "NZ", "US"]
@@ -116,21 +160,39 @@ exports.createCheckoutSession = async (req, res, next) => {
 }
 
 exports.getCheckoutSession = async (req, res) => {
-	// console.log(req);
+	console.log(req);
 	const {sessionId} = req.params;
 
 	try {
-	  if (!sessionId.startsWith("cs_")) {
-		throw Error('Incorrect checkout session id')
-	  }
-  
-	  const checkoutSession = await stripe.checkout.sessions.retrieve(
-		sessionId,
-		{expand: ["payment_intent"]}
-	  );
-	  res.status(200).json(checkoutSession)
+		if (!sessionId.startsWith("cs_")) {
+			throw Error('Incorrect checkout session id')
+		}
+	
+		const checkoutSession = await stripe.checkout.sessions.retrieve(
+			sessionId,
+			{expand: ["payment_intent"]}
+		);
+		const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
+		// const products = await Promise.all(listLineItems.map((lineItem) => {
+		// 	const product = stripe.products.retrieve(lineItem.price.product);
+		// 	return product;
+		// }));
+
+		const userId = checkoutSession.client_reference_id;
+		let products = [];
+
+		for (lineItem of listLineItems) {
+			const product = {
+				item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
+				qty: lineItem.quantity,
+				price: lineItem.price.unit_amount
+			}
+			products.push(product);
+		}
+		res.status(200).json({"checkoutSession": checkoutSession, "listLineItems": listLineItems, "products": products})
 	} catch (error) {
-	  res.status(500).json({statusCode: 500, message: error.message});
+		console.log("error", error);
+		res.status(500).json({statusCode: 500, message: error.message});
 	}
 }
 
@@ -140,7 +202,37 @@ const createSale = async session => {
 	// const user = (await User.findOne({ email: session.customer_email })).id;
 	// const price = session.display_items[0].amount / 100;
 	// await Booking.create({ tour, user, price });
-  };
+
+
+	const checkoutSession = await stripe.checkout.sessions.retrieve(
+		sessionId,
+		{expand: ["payment_intent"]}
+	);
+
+	const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
+
+	const userId = checkoutSession.client_reference_id;
+	let products = [];
+
+	for (lineItem of listLineItems) {
+		const product = {
+			item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
+			qty: lineItem.quantity,
+			price: lineItem.price.unit_amount
+		}
+		products.push(product);
+	}
+
+	const newSale = new Sale({
+		user: userId,
+		products: products
+	});
+	newSale.save((err, sale) => {
+		if (err) res.send(err);
+		res.json(sale);
+	});
+
+};
   
 exports.webhookCheckout = (req, res, next) => {
 	const signature = req.headers['stripe-signature'];
@@ -157,7 +249,7 @@ exports.webhookCheckout = (req, res, next) => {
 	}
 
 	if (event.type === 'checkout.session.completed')
-		createBookingCheckout(event.data.object);
+		createSale(event.data.object);
 
 	res.status(200).json({ received: true });
 };
