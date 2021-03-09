@@ -3,7 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const pathfinderUI = require("pathfinder-ui"); // this to be removed for prod
+// const pathfinderUI = require("pathfinder-ui"); // this to be removed for prod
 const dotenv = require("dotenv");
 const dbServer = require("./api/config/database");
 
@@ -53,14 +53,14 @@ app.use(cors(corsOptions)); // remember to turn on cors to accept specific domai
 app.use(session({ secret: process.env.SESSION }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(
-	"/pathfinder",
-	function (req, res, next) {
-		pathfinderUI(app);
-		next();
-	},
-	pathfinderUI.router
-); // this to be removed for prod
+// app.use(
+// 	"/pathfinder",
+// 	function (req, res, next) {
+// 		pathfinderUI(app);
+// 		next();
+// 	},
+// 	pathfinderUI.router
+// ); // this to be removed for prod
 
 userRoutes(app);
 authRoutes(app);
