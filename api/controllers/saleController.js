@@ -1,4 +1,5 @@
 const productController = require("./productController");
+const { ROOT, PRODUCTS } = require("../config/serverData");
 
 const mongoose = require("mongoose");
 const productModel = require("../models/productModel");
@@ -61,7 +62,6 @@ exports.listSales = (req, res) => {
 		});
 };
 
-
 exports.createCheckoutSession = async (req, res, next) => {
 	try {
 
@@ -93,7 +93,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 				validatedItems.push(item)
 			})
 			return validatedItems;
-		}
+		};
 
 
 		const products = (await productController.allProducts());
@@ -155,7 +155,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 
 		res.status(200).json(checkoutSession)
 	} catch (error) {
-		res.status(500).json({statusCode: 500, message: error.message});
+		res.status(500).json({ statusCode: 500, message: error.message, error });
 	}
 }
 
