@@ -49,7 +49,7 @@ const corsOptions = {
 	credentials: true
 };
 
-app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
+app.use(cors()); // remember to turn on cors to accept specific domains
 app.use(session({ secret: process.env.SESSION }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
