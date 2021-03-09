@@ -38,7 +38,7 @@ const app = express();
 
 // For CORS
 const devServer = "http://localhost:3001";
-const prodServer = "https://furnique.netlify.app/";
+const prodServer = "furnique.netlify.app";
 
 const whitelist = [devServer, prodServer];
 const corsOptions = {
