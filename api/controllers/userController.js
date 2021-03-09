@@ -47,6 +47,7 @@ exports.createUser = async (req, res) => {
 			newCart.save();
 
 			req.session.user_id = user.id;
+			console.log(req.session)
 			res.json({
 				status: "LOGGED_IN",
 				user
