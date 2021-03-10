@@ -95,6 +95,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const lineItems = validateCartItems(products, cartItems);
 
 		const origin = process.env.NODE_ENV === "production" ? req.headers.origin : "http://localhost:3001";
+		console.log("this is the header's origin", req.headers.origin);
 
 		const checkoutSession = await stripe.checkout.sessions.create({
 			submit_type: "pay",
