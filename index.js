@@ -59,7 +59,7 @@ app.use(cors(corsOptions)); // remember to turn on cors to accept specific domai
 app.use(
 	session({
 		secret: process.env.SESSION,
-		// resave: false,
+		resave: false,
 		saveUninitialized: true,
 		cookie: {
 			sameSite: "none"
