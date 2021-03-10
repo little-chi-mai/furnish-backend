@@ -4,14 +4,12 @@ const { ROOT, PRODUCTS } = require("../config/serverData");
 const mongoose = require("mongoose");
 const productModel = require("../models/productModel");
 const Sale = mongoose.model("Sale");
-const axios = require('axios');
+const axios = require("axios");
 const { response } = require("express");
 // const User = mongoose.model("User");
 
-require('dotenv').config;
+require("dotenv").config;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
-
 
 // exports.getCheckoutSession = (req, res) => {
 // const product = await productModel.findById(req.params.tourId)
@@ -64,15 +62,14 @@ exports.listSales = (req, res) => {
 
 exports.createCheckoutSession = async (req, res, next) => {
 	try {
-
-		const cartItems = req.body['cartItems'];
+		const cartItems = req.body["cartItems"];
 		console.log(req.body);
 		console.log("CARTITEMS", cartItems);
 
 		const validateCartItems = (inventory, cartDetails) => {
 			const validatedItems = [];
-			const cartItemsArray = Object.keys(cartDetails).map(key => cartItems[key]);
-			cartItemsArray.map(cartItem => {
+			const cartItemsArray = Object.keys(cartDetails).map((key) => cartItems[key]);
+			cartItemsArray.map((cartItem) => {
 				const inventoryItem = inventory.find((product) => product.id === cartItem.id);
 				if (!inventoryItem) throw new Error(`Product ${product.id} not found!`);
 				const item = {
@@ -87,40 +84,39 @@ exports.createCheckoutSession = async (req, res, next) => {
 						},
 						unit_amount: inventoryItem.price * 100
 					}
-				}
+				};
 				if (inventoryItem.description) item.price_data.product_data.description = inventoryItem.description;
 				if (inventoryItem.image) item.price_data.product_data.images = [inventoryItem.image];
-				validatedItems.push(item)
-			})
+				validatedItems.push(item);
+			});
 			return validatedItems;
 		};
 
-
-		const products = (await productController.allProducts());
+		const products = await productController.allProducts();
 
 		const lineItems = validateCartItems(products, cartItems);
-		const origin = process.env.NODE_ENV === 'production' ? req.headers.origin : 'http://localhost:3001'
+		const origin = process.env.NODE_ENV === "production" ? req.headers.origin : "http://localhost:3001";
 
 		const checkoutSession = await stripe.checkout.sessions.create({
-			submit_type: 'pay',
-			payment_method_types: ['card'],
+			submit_type: "pay",
+			payment_method_types: ["card"],
 			// success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
-			success_url: `origin`,
-			cancel_url: origin,
+			success_url: ROOT,
+			cancel_url: PRODUCTS,
 			line_items: lineItems,
 			// billing_address_collection: 'auto',
 			// shipping_address_collection: {
 			// 	allowed_countries: ["AU", "NZ", "US"]
 			// },
-			mode: 'payment',
-			client_reference_id: req.body['userId'],
+			mode: "payment",
+			client_reference_id: req.body["userId"]
 		});
 
-		res.status(200).json(checkoutSession)
+		res.status(200).json(checkoutSession);
 	} catch (error) {
 		res.status(500).json({ statusCode: 500, message: error.message, error });
 	}
-}
+};
 
 // exports.getCheckoutSession = async (req, res) => {
 // 	console.log(req);
@@ -130,7 +126,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 // 		if (!sessionId.startsWith("cs_")) {
 // 			throw Error('Incorrect checkout session id')
 // 		}
-	
+
 // 		const checkoutSession = await stripe.checkout.sessions.retrieve(
 // 			sessionId,
 // 			{expand: ["payment_intent"]}
@@ -159,12 +155,8 @@ exports.createCheckoutSession = async (req, res, next) => {
 // 	}
 // }
 
-
-const createSale = async session => {
-	const checkoutSession = await stripe.checkout.sessions.retrieve(
-		sessionId,
-		{expand: ["payment_intent"]}
-	);
+const createSale = async (session) => {
+	const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId, { expand: ["payment_intent"] });
 
 	const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
 
@@ -175,8 +167,8 @@ const createSale = async session => {
 		const product = {
 			item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
 			qty: lineItem.quantity,
-			price: lineItem.price.unit_amount 
-		}
+			price: lineItem.price.unit_amount
+		};
 		products.push(product);
 	}
 
@@ -188,26 +180,20 @@ const createSale = async session => {
 		if (err) res.send(err);
 		res.json(sale);
 	});
-
 };
-  
+
 exports.webhookCheckout = (req, res, next) => {
-	const signature = req.headers['stripe-signature'];
+	const signature = req.headers["stripe-signature"];
 
 	let event;
 	try {
-		event = stripe.webhooks.constructEvent(
-		req.body,
-		signature,
-		process.env.STRIPE_WEBHOOK_SECRET
-		);
+		event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
 	} catch (err) {
 		return res.status(400).send(`Webhook error: ${err.message}`);
 	}
 
-	if (event.type === 'checkout.session.completed')
-		console.log("SALES TO BE CREATED");
-		createSale(event.data.object);
+	if (event.type === "checkout.session.completed") console.log("SALES TO BE CREATED");
+	createSale(event.data.object);
 
 	res.status(200).json({ received: true });
 };
