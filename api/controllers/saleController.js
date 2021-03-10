@@ -66,8 +66,6 @@ exports.createCheckoutSession = async (req, res, next) => {
 	try {
 
 		const cartItems = req.body['cartItems'];
-		console.log(req.body);
-		console.log("CARTITEMS", cartItems);
 
 		const validateCartItems = (inventory, cartDetails) => {
 			const validatedItems = [];
@@ -99,44 +97,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const products = (await productController.allProducts());
 
 		const lineItems = validateCartItems(products, cartItems);
-
-		// // validatedCartItems -> filtering cartItems by checking whether cartItem is part of products
-		// const validateCartItems = (products, cartItems) => {
-		// 	return Object
-		// 		.keys(cartItems)
-		// 		.map(key => cartItems[key])
-		// 		.map(cartItem => {
-		// 			const product = products.find((product) => product.id === cartItem.id)
-		// 			if (!product) throw new Error(`Product ${product.id} not found!`)
-		// 			return {
-		// 				item: product,
-		// 				qty: cartItem.quantity,
-		// 				price: product.price
-		// 			}
-		// 		})
-		// }
-		// const saleProducts = validateCartItems((await productController.allProducts()), cartItems);
-
-		// // convert validatedCartItems to lineItems
-		// const convertSaleProductsToStripeItems = (saleProducts) => {
-		// 	saleProducts.map(saleProduct => {
-		// 		const item = {
-		// 		name: saleProduct.item.name,
-		// 		amount: saleProduct.item.price * 100,
-		// 		currency: "AUD",
-		// 		quantity: saleProduct.quantity
-		// 		}
-		// 		if (saleProduct.item.description) item.description = saleProduct.item.description
-		// 		if (saleProduct.item.image) item.images = [saleProduct.item.image]
-		// 		return item
-		// 	})
-		// }
-		// const line_items = convertSaleProductsToStripeItems(saleProducts);
 		
-		// // create stripe sessions
-		// save session + validatedCartItems to MongoDB
-		// res.json(session)
-
 		const origin = process.env.NODE_ENV === 'production' ? req.headers.origin : 'http://localhost:3001'
 
 		const checkoutSession = await stripe.checkout.sessions.create({
@@ -151,7 +112,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 			// 	allowed_countries: ["AU", "NZ", "US"]
 			// },
 			mode: 'payment',
-			client_reference_id: req.body['userId'],
+			client_reference_id: req.body['user'].id,
 		});
 
 		res.status(200).json(checkoutSession)
