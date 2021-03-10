@@ -56,16 +56,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
 // app.use(cors());
-// app.set("trust proxy", 1);
+app.set("trust proxy", 1);
 app.use(
 	session({
-		secret: process.env.SESSION
-		// resave: false,
-		// saveUninitialized: true
-		// cookie: {
-		// 	sameSite: "none",
-		// 	secure: true
-		// }
+		secret: process.env.SESSION,
+		resave: false,
+		saveUninitialized: true,
+		cookie: {
+			sameSite: "none",
+			secure: true
+		}
 	})
 );
 app.use(bodyParser.urlencoded({ extended: true }));
