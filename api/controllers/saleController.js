@@ -99,13 +99,51 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const products = (await productController.allProducts());
 
 		const lineItems = validateCartItems(products, cartItems);
+
+		// // validatedCartItems -> filtering cartItems by checking whether cartItem is part of products
+		// const validateCartItems = (products, cartItems) => {
+		// 	return Object
+		// 		.keys(cartItems)
+		// 		.map(key => cartItems[key])
+		// 		.map(cartItem => {
+		// 			const product = products.find((product) => product.id === cartItem.id)
+		// 			if (!product) throw new Error(`Product ${product.id} not found!`)
+		// 			return {
+		// 				item: product,
+		// 				qty: cartItem.quantity,
+		// 				price: product.price
+		// 			}
+		// 		})
+		// }
+		// const saleProducts = validateCartItems((await productController.allProducts()), cartItems);
+
+		// // convert validatedCartItems to lineItems
+		// const convertSaleProductsToStripeItems = (saleProducts) => {
+		// 	saleProducts.map(saleProduct => {
+		// 		const item = {
+		// 		name: saleProduct.item.name,
+		// 		amount: saleProduct.item.price * 100,
+		// 		currency: "AUD",
+		// 		quantity: saleProduct.quantity
+		// 		}
+		// 		if (saleProduct.item.description) item.description = saleProduct.item.description
+		// 		if (saleProduct.item.image) item.images = [saleProduct.item.image]
+		// 		return item
+		// 	})
+		// }
+		// const line_items = convertSaleProductsToStripeItems(saleProducts);
+		
+		// // create stripe sessions
+		// save session + validatedCartItems to MongoDB
+		// res.json(session)
+
 		const origin = process.env.NODE_ENV === 'production' ? req.headers.origin : 'http://localhost:3001'
 
 		const checkoutSession = await stripe.checkout.sessions.create({
 			submit_type: 'pay',
 			payment_method_types: ['card'],
 			// success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
-			success_url: `origin`,
+			success_url: origin,
 			cancel_url: origin,
 			line_items: lineItems,
 			// billing_address_collection: 'auto',
@@ -161,6 +199,12 @@ exports.createCheckoutSession = async (req, res, next) => {
 
 
 const createSale = async session => {
+	// const tour = session.client_reference_id;
+	// const user = (await User.findOne({ email: session.customer_email })).id;
+	// const price = session.display_items[0].amount / 100;
+	// await Booking.create({ tour, user, price });
+
+
 	const checkoutSession = await stripe.checkout.sessions.retrieve(
 		sessionId,
 		{expand: ["payment_intent"]}
