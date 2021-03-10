@@ -69,7 +69,8 @@ exports.createCheckoutSession = async (req, res, next) => {
 			const cartItemsArray = Object.keys(cartDetails).map((key) => cartItems[key]);
 			cartItemsArray.map((cartItem) => {
 				const inventoryItem = inventory.find((product) => product.id === cartItem.id);
-				if (!inventoryItem) throw new Error(`Product ${product.id} not found!`);
+
+				if (!inventoryItem) throw new Error(`Product ${cartItem.id} not found!`);
 				const item = {
 					quantity: cartItem.quantity,
 					price_data: {
@@ -95,7 +96,6 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const lineItems = validateCartItems(products, cartItems);
 
 		const origin = process.env.NODE_ENV === "production" ? req.headers.origin : "http://localhost:3001";
-		console.log("this is the header's origin", req.headers.origin);
 
 		const checkoutSession = await stripe.checkout.sessions.create({
 			submit_type: "pay",

@@ -52,14 +52,11 @@ const corsOptions = {
 	credentials: true
 };
 
-app.post('/webhook-checkout',
-	bodyParser.raw({type: 'application/json'}),
-	saleController.webhookCheckout
-)
+app.post("/webhook-checkout", bodyParser.raw({ type: "application/json" }), saleController.webhookCheckout);
 
 app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
 // app.use(cors());
-app.use(session({ secret: process.env.SESSION }));
+app.use(session({ secret: process.env.SESSION, saveUninitialized: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // app.use(
