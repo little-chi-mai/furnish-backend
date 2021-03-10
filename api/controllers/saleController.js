@@ -63,8 +63,6 @@ exports.listSales = (req, res) => {
 exports.createCheckoutSession = async (req, res, next) => {
 	try {
 		const cartItems = req.body["cartItems"];
-		console.log(req.body);
-		console.log("CARTITEMS", cartItems);
 
 		const validateCartItems = (inventory, cartDetails) => {
 			const validatedItems = [];
@@ -95,21 +93,22 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const products = await productController.allProducts();
 
 		const lineItems = validateCartItems(products, cartItems);
+
 		const origin = process.env.NODE_ENV === "production" ? req.headers.origin : "http://localhost:3001";
 
 		const checkoutSession = await stripe.checkout.sessions.create({
 			submit_type: "pay",
 			payment_method_types: ["card"],
 			// success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
-			success_url: ROOT,
-			cancel_url: PRODUCTS,
+			success_url: origin,
+			cancel_url: origin,
 			line_items: lineItems,
 			// billing_address_collection: 'auto',
 			// shipping_address_collection: {
 			// 	allowed_countries: ["AU", "NZ", "US"]
 			// },
 			mode: "payment",
-			client_reference_id: req.body["userId"]
+			client_reference_id: req.body["user"].id
 		});
 
 		res.status(200).json(checkoutSession);
@@ -156,6 +155,11 @@ exports.createCheckoutSession = async (req, res, next) => {
 // }
 
 const createSale = async (session) => {
+	// const tour = session.client_reference_id;
+	// const user = (await User.findOne({ email: session.customer_email })).id;
+	// const price = session.display_items[0].amount / 100;
+	// await Booking.create({ tour, user, price });
+
 	const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId, { expand: ["payment_intent"] });
 
 	const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
