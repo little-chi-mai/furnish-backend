@@ -59,9 +59,9 @@ app.use(cors(corsOptions)); // remember to turn on cors to accept specific domai
 // app.set("trust proxy", 1);
 app.use(
 	session({
-		secret: process.env.SESSION,
+		secret: process.env.SESSION
 		// resave: false,
-		saveUninitialized: true
+		// saveUninitialized: true
 		// cookie: {
 		// 	sameSite: "none",
 		// 	secure: true
