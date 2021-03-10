@@ -12,9 +12,6 @@ exports.login = async (req, res) => {
 		if (validPassword) {
 			req.session.user_id = user.id;
 
-			console.log("logging in this is req.session", req.session);
-			console.log("logging in this is req.session.user_id", req.session.user_id);
-
 			res.json({
 				status: "LOGGED_IN",
 				user
@@ -45,8 +42,6 @@ exports.logout = (req, res) => {
 };
 
 exports.isLoggedIn = async (req, res) => {
-	console.log("isloggedIn this is req.session", req.session);
-	console.log("isloggedIn this is req.session.user_id", req.session.user_id);
 	if (req.session.user_id) {
 		const user = await User.findById(req.session.user_id);
 		res.json({
