@@ -63,7 +63,7 @@ app.use(
 		saveUninitialized: true,
 		cookie: {
 			sameSite: "none",
-			secure: false
+			secure: true
 		}
 	})
 );
