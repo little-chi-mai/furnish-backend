@@ -39,6 +39,7 @@ const saleController = require("./api/controllers/saleController");
 const port = process.env.PORT || 3000;
 const app = express();
 
+
 // For CORS
 const devServer = "http://localhost:3001";
 const prodServer = "https://furnique.netlify.app";
@@ -56,6 +57,7 @@ app.post('/webhook-checkout',
 	bodyParser.raw({type: 'application/json'}),
 	saleController.webhookCheckout
 )
+
 
 app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
 // app.use(cors());
