@@ -4,14 +4,12 @@ const { ROOT, PRODUCTS } = require("../config/serverData");
 const mongoose = require("mongoose");
 const productModel = require("../models/productModel");
 const Sale = mongoose.model("Sale");
-const axios = require('axios');
+const axios = require("axios");
 const { response } = require("express");
 // const User = mongoose.model("User");
 
-require('dotenv').config;
+require("dotenv").config;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
-
 
 // exports.getCheckoutSession = (req, res) => {
 // const product = await productModel.findById(req.params.tourId)
@@ -99,12 +97,12 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const products = (await productController.allProducts());
 
 		const lineItems = validateCartItems(products, cartItems);
-		
-		const origin = process.env.NODE_ENV === 'production' ? req.headers.origin : 'http://localhost:3001'
+
+		const origin = process.env.NODE_ENV === "production" ? req.headers.origin : "http://localhost:3001";
 
 		const checkoutSession = await stripe.checkout.sessions.create({
-			submit_type: 'pay',
-			payment_method_types: ['card'],
+			submit_type: "pay",
+			payment_method_types: ["card"],
 			// success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
 			success_url: origin,
 			cancel_url: origin,
@@ -121,11 +119,11 @@ exports.createCheckoutSession = async (req, res, next) => {
 			// }
 		});
 
-		res.status(200).json(checkoutSession)
+		res.status(200).json(checkoutSession);
 	} catch (error) {
 		res.status(500).json({ statusCode: 500, message: error.message, error });
 	}
-}
+};
 
 // Function to save a success Sale into Database
 const createSale = async session => {
@@ -152,8 +150,8 @@ const createSale = async session => {
 		const product = {
 			item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
 			qty: lineItem.quantity,
-			price: lineItem.price.unit_amount 
-		}
+			price: lineItem.price.unit_amount
+		};
 		products.push(product);
 	}
 	console.log("DONE PRODUCTS", products);
@@ -167,24 +165,19 @@ const createSale = async session => {
 	console.log("DONE CREATE NEW SALE", newSale);
 
 };
-  
+
 exports.webhookCheckout = (req, res, next) => {
-	const signature = req.headers['stripe-signature'];
+	const signature = req.headers["stripe-signature"];
 
 	let event;
 	try {
-		event = stripe.webhooks.constructEvent(
-		req.body,
-		signature,
-		process.env.STRIPE_WEBHOOK_SECRET
-		);
+		event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
 	} catch (err) {
 		return res.status(400).send(`Webhook error: ${err.message}`);
 	}
 
-	if (event.type === 'checkout.session.completed')
-		console.log("SALES TO BE CREATED");
-		createSale(event.data.object);
+	if (event.type === "checkout.session.completed") console.log("SALES TO BE CREATED");
+	createSale(event.data.object);
 
 	res.status(200).json({ received: true });
 
