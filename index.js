@@ -56,7 +56,8 @@ app.post("/webhook-checkout", bodyParser.raw({ type: "application/json" }), sale
 
 app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
 // app.use(cors());
-app.set("trust proxy", 1);
+
+app.set("trust proxy", 1); // for heroku
 app.use(
 	session({
 		secret: process.env.SESSION,

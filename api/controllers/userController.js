@@ -49,7 +49,7 @@ exports.createUser = async (req, res) => {
 			newCart.save();
 
 			req.session.user_id = user.id;
-			console.log(req.session)
+			console.log(req.session);
 			res.json({
 				status: "LOGGED_IN",
 				user
@@ -69,9 +69,17 @@ exports.findUser = (req, res) => {
 	});
 };
 
+exports.findUserByEmail = (req, res) => {
+	User.find({ email: req.params.email }, (err, user) => {
+		if (err) console.log(err);
+
+		res.json(user);
+	});
+};
+
 exports.updateUser = (req, res) => {
 	User.findOneAndUpdate({ _id: req.params.userId }, req.body, { new: true }, (err, user) => {
-		if (err) res.send(err);
+		if (err) console.log(err);
 		res.json(user);
 	});
 };
