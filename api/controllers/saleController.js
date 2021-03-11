@@ -4,6 +4,7 @@ const { ROOT, PRODUCTS } = require("../config/serverData");
 const mongoose = require("mongoose");
 const productModel = require("../models/productModel");
 const Sale = mongoose.model("Sale");
+const Product = mongoose.model("Product");
 const axios = require("axios");
 const { response } = require("express");
 // const User = mongoose.model("User");
@@ -87,15 +88,15 @@ const validateCartItems = (inventory, cartDetails) => {
 	return validatedItems;
 };
 
+
 exports.createCheckoutSession = async (req, res, next) => {
 	try {
 		const cartItems = req.body['cartItems'];
 		const user = req.body['user'];
-		console.log('cartItems', cartItems);
-		console.log('user', user);
 
 		const products = (await productController.allProducts());
 
+		// validated line_items to send to Stripe
 		const lineItems = validateCartItems(products, cartItems);
 
 		const origin = process.env.NODE_ENV === "production" ? req.headers.origin : "http://localhost:3001";
@@ -103,20 +104,17 @@ exports.createCheckoutSession = async (req, res, next) => {
 		const checkoutSession = await stripe.checkout.sessions.create({
 			submit_type: "pay",
 			payment_method_types: ["card"],
-			// success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
-			success_url: origin,
+			// might change later to /history
+			success_url: `${origin}`,
 			cancel_url: origin,
 			line_items: lineItems,
-			// billing_address_collection: 'auto',
-			// shipping_address_collection: {
-			// 	allowed_countries: ["AU", "NZ", "US"]
-			// },
+			billing_address_collection: 'auto',
+			shipping_address_collection: {
+				allowed_countries: ["AU", "NZ", "US"]
+			},
 			mode: 'payment',
 			client_reference_id: user.id,
 			customer_email: user.email,
-			// payment_intent_data: {
-			// 	receipt_email: user.email
-			// }
 		});
 
 		res.status(200).json(checkoutSession);
@@ -127,42 +125,53 @@ exports.createCheckoutSession = async (req, res, next) => {
 
 // Function to save a success Sale into Database
 const createSale = async session => {
+	try {
+		// Retrive checkoutSession by sessionId
+		const checkoutSession = await stripe.checkout.sessions.retrieve(
+			session.id,
+			{expand: ["payment_intent"]}
+		);
 
-	console.log("SESSION_ID", session.id);
-	const checkoutSession = await stripe.checkout.sessions.retrieve(
-		session.id,
-		{expand: ["payment_intent"]}
-	);
+		// Retrive line_items by sessionId
+		const listLineItems = (await stripe.checkout.sessions.listLineItems(session.id)).data;
+		
+		const userId = checkoutSession.client_reference_id;
+		
+		// Resharp line_items into products to save into database
+		let products = [];
 
-	console.log("DONE CHECKOUTSESSION", checkoutSession);
+		for (lineItem of listLineItems) {
+			itemId = (await stripe.products.retrieve(lineItem.price.product)).metadata.id;
+			const product = {
+				item: itemId,
+				qty: lineItem.quantity,
+				price: lineItem.price.unit_amount
+			};
+			products.push(product);
+		}
 
-	const listLineItems = (await stripe.checkout.sessions.listLineItems(session.id)).data;
+		// Save purchased items in database
+		const newSale = new Sale({
+			user: userId,
+			products: products
+		});
+		newSale.save();
 
-	console.log("DONE LISTLINEITEMS", listLineItems);
+		// deduct items from Product model in database
+		products.forEach(product => {
+			Product.findOneAndUpdate({ _id: product.item}, {
+				$inc: {
+				qty: -1 * product.qty
+				}
+			}, {new: true}, (err, product) => {
+				if (err) console.log(err);
+				console.log('NEW PRODUCT', product);
+			});
+		});
 
-	const userId = checkoutSession.client_reference_id;
-
-	console.log("DONE USER_ID", userId);
-
-	let products = [];
-
-	for (lineItem of listLineItems) {
-		const product = {
-			item: (await stripe.products.retrieve(lineItem.price.product)).metadata.id,
-			qty: lineItem.quantity,
-			price: lineItem.price.unit_amount
-		};
-		products.push(product);
+	} catch(error) {
+		console.log(error);
 	}
-	console.log("DONE PRODUCTS", products);
-
-	const newSale = new Sale({
-		user: userId,
-		products: products
-	});
-	newSale.save();
-
-	console.log("DONE CREATE NEW SALE", newSale);
 
 };
 

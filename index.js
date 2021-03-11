@@ -53,7 +53,7 @@ const corsOptions = {
 	credentials: true
 };
 
-app.post("/webhook-checkout", bodyParser.raw({ type: "application/json" }), saleController.webhookCheckout);
+app.post("/webhook-checkout", express.raw({ type: "application/json" }), saleController.webhookCheckout);
 
 
 app.use(cors(corsOptions)); // remember to turn on cors to accept specific domains
