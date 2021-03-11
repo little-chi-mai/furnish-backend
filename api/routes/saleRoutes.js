@@ -5,7 +5,7 @@ module.exports = (app) => {
 	// Request checkout session
 	app.route("/checkout-sessions").post(saleController.createCheckoutSession);
 
-	// app.route("/checkout-sessions/:sessionId").get(saleController.getCheckoutSession)
+	app.route("/checkout-sessions/:sessionId").get(saleController.getCheckoutSession)
 
 	app.route("/sales/:userId").get(saleController.findUserSales);
 
