@@ -45,6 +45,10 @@ mongoose.connect(dbServer, {
 // 	}
 // ];
 
+Product.deleteMany({})
+	.then(() => console.log("OLD DATA DELETED"))
+	.catch((err) => console.log(err));
+
 const seedProducts = [
 	{
 		name: "Chairy",
@@ -75,7 +79,87 @@ const seedProducts = [
 		categories: ["outdoor", "table"],
 		qty: 100,
 		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
-	}
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
+	{
+		name: "Coffly",
+		description: "Outdoor rectangle coffee table",
+		price: 65,
+		color: "white",
+		style: "modern",
+		categories: ["outdoor", "table"],
+		qty: 100,
+		image: "https://www.jamessaid.com.au/media/catalog/product/cache/2/small_image/210x/9df78eab33525d08d6e5fb8d27136e95/1/1/113188.jpg"
+	},
 ];
 
 Product.insertMany(seedProducts)
