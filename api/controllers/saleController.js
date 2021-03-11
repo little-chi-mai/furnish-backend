@@ -105,7 +105,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 			submit_type: "pay",
 			payment_method_types: ["card"],
 			// might change later to /history
-			success_url: `${origin}`,
+			success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: origin,
 			line_items: lineItems,
 			billing_address_collection: 'auto',
@@ -185,9 +185,42 @@ exports.webhookCheckout = (req, res, next) => {
 		return res.status(400).send(`Webhook error: ${err.message}`);
 	}
 
-	if (event.type === "checkout.session.completed") console.log("SALES TO BE CREATED");
-	createSale(event.data.object);
-
+	if (event.type === "checkout.session.completed") {
+		createSale(event.data.object);
+	}
+	
 	res.status(200).json({ received: true });
 
 };
+
+exports.getCheckoutSession = async (req, res) => {
+
+	const {sessionId} = req.params;
+
+	try {
+		if (!sessionId.startsWith("cs_")) {
+			throw Error('Incorrect checkout session id')
+		}
+
+		// Retrive checkoutSession by sessionId
+		const checkoutSession = await stripe.checkout.sessions.retrieve(
+			sessionId,
+			{expand: ["payment_intent"]}
+		);
+
+		// Retrive line_items by sessionId
+		const listLineItems = (await stripe.checkout.sessions.listLineItems(sessionId)).data;
+
+		let productDetails = [];
+
+		for (lineItem of listLineItems) {
+			item = (await stripe.products.retrieve(lineItem.price.product));
+			productDetails.push(item);
+		}
+
+		res.status(200).json({"checkoutSession": checkoutSession, "listLineItems": listLineItems, "productDetails": productDetails})
+	} catch (error) {
+		console.log("error", error);
+		res.status(500).json({statusCode: 500, message: error.message});
+	}
+}
