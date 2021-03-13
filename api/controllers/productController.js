@@ -62,8 +62,10 @@ exports.searchProduct = async (req, res) => {
 		const col = await Product.find({ color: { $in: word } });
 		const style = await Product.find({ style: { $in: word } });
 
-		if (cat.length > 0) queryString.categories = { ...queryString.categories, $regex: `.*${word}.*` };
-		else if (col.length > 0) queryString.color = word;
+		if (cat.length > 0) {
+			!queryString.categories && (queryString.categories = { $all: [] });
+			queryString.categories.$all.push(word);
+		} else if (col.length > 0) queryString.color = word;
 		else if (style.length > 0) queryString.style = word;
 		else if (name.length > 0) queryString.name = { $regex: `.*${word}.*` };
 	}
