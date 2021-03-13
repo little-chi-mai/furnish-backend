@@ -54,9 +54,16 @@ exports.findProductBy = async (req, res) => {
 exports.searchProduct = async (req, res) => {
 	let q = req.query.q.toLowerCase().split(" ");
 	const queryString = {};
+	const roomsList = ["dining", "living"];
 
 	// Figuring out search criteria
 	for (let word of q) {
+		if (word === "room") {
+			continue;
+		} else if (roomsList.indexOf(word) !== -1) {
+			word += " room";
+		}
+
 		const name = await Product.find({ name: { $regex: `.*${word}.*` } });
 		const cat = await Product.find({ categories: { $regex: `.*${word}.*` } });
 		const col = await Product.find({ color: { $in: word } });
